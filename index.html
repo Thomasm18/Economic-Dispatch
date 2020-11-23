@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>Power System Analysis</title>
+    <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/checkout/">
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <style>
+        .container {
+        max-width: 960px;
+        }
+
+        .border-top { border-top: 1px solid #e5e5e5; }
+        .border-bottom { border-bottom: 1px solid #e5e5e5; }
+        .border-top-gray { border-top-color: #adb5bd; }
+
+        .box-shadow { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); }
+
+        .lh-condensed { line-height: 1.25; }
+
+        #costDiv {
+            display: none;
+        }
+
+        #outputDiv {
+            display: none;
+        }
+
+        table th {
+            text-align: center;
+        };
+    </style>
+</head>
+
+<body class="bg-light">
+    <div class="container">
+        <div class="py-5 text-center">
+            <img class="d-block mx-auto mb-4"
+                src="https://i.pinimg.com/originals/65/cf/87/65cf879f2d2a9303eebb46f67ddace8c.jpg" alt="" width="100"
+                height="72">
+            <h2>Power System Analysis</h2>
+            <p class="lead">Use our Website to Calculate your Power Requirements!</p>
+        </div>
+
+        <div class="col-md-12 ">
+            <h3 class="mb-3">Power Calculation</h3>
+            <form class="needs-validation" novalidate action="" id="inputForm"  onsubmit="return false">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label>Power Demand</label>
+                        <input type="text" class="form-control" id="powerDemand" placeholder="" value="">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Number of Generators</label>
+                        <select class="custom-select d-block w-100" id="generators">
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                            <option>5</option>
+                            <option>6</option>
+                            <option>7</option>
+                            <option>8</option>
+                            <option>9</option>
+                            <option>10</option>
+                        </select>
+                    </div>
+                </div>
+                <input class="btn btn-primary btn-lg btn-block" type="submit" name="submit" value="Proceed" onclick="inputModifier()">
+            </form>
+            <div id="costDiv">
+                <hr class="mb-4">
+                <h3 class="mb-3">Cost Characteristics</h3>
+                <hr class="mb-4">
+
+                <div id="inputContainer"></div>
+                <input class="btn btn-primary btn-lg btn-block" type="submit" name="submit" value="Click to calculate" onclick="calculate()">
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12 text-center" id="outputDiv">
+        <hr class="mb-4">
+        <h3 class="mb-3">Generator Output</h3>
+        <div id="outputContainer">
+            <table class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Generator</th>
+                        <th scope="col">Output</th>
+                    </tr>
+                </thead>
+                <tbody id="tableRows">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </div>
+
+
+    <footer class="my-5 pt-5 text-muted text-center text-small">
+        <p class="mb-1">Made with ⚡ by Joel & Thomas</p>
+    </footer>
+    </div>
+
+
+
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+
+        <script>
+
+            let economics = (coeffs, limits, m, pd) => {
+                let powers = [];
+                powers.length = m;
+                let k = 0;
+
+                let topSum = 0.0, bottomSum = 0.0;
+
+                for (let j = 0; j < m; j++) {
+                    topSum += coeffs[j][1] / (2 * coeffs[j][2]);
+                    bottomSum += 1 / (2 * coeffs[j][2]);
+                }
+
+                let lambda = (pd + topSum) / (bottomSum);
+
+                console.log(lambda);
+
+                while (k < 100) {
+                    for (let i = 0; i < m; i++) {
+                        powers[i] = (lambda - coeffs[i][1]) / (2 * coeffs[i][2]);
+
+                        if (powers[i] <= limits[i][1] && powers[i] <= limits[i][0])
+                            powers[i] = limits[i][0];
+
+                        else if (powers[i] >= limits[i][1])
+                            powers[i] = limits[i][1];
+                    }
+
+                    let delPower = powers.reduce((a, b) => a + b);
+
+                    if (delPower >= pd)
+                        return powers;
+
+                    let cCoeffSum = 0.0;
+                    for (let i = 0; i < m; i++) {
+                        cCoeffSum += 1 / (2 * coeffs[i][2]);
+                    }
+
+                    lambda += delPower / (1000 * cCoeffSum);
+                    console.log(lambda);    
+                    k++;
+                }
+                return powers;
+            };
+
+
+            let inputModifier = () => {
+                let costDiv = document.getElementById('costDiv');
+                costDiv.style.display = "block";
+                let m = document.getElementById('generators').value;
+                let container = document.getElementById('inputContainer');
+
+                while (container.hasChildNodes()) {
+                    container.removeChild(container.lastChild);
+                }
+
+                for (let i = 0; i < m; i++) {
+                    let doc = document.createElement('div');
+                    doc.id = i;
+                    doc.innerHTML = `
+                                <h5 class="mb-3">Generator ${i + 1}</h5>
+                                <div class="row">
+                                    <div class="col-md-2 mb-3">
+                                        <label>A</label>
+                                        <input type="text" class="form-control" id="a${i}" placeholder="" value="" name="costsA[]" required>
+                                        <div class="invalid-feedback">
+                                            Valid Number is required.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>B</label>
+                                        <input type="text" class="form-control" id="b${i}" placeholder="" value="" name="costsB[]" required>
+                                        <div class="invalid-feedback">
+                                            Valid Number is required.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label>C</label>
+                                        <input type="text" class="form-control" id="c${i}" placeholder="" value="" name="costsC[]" required>
+                                        <div class="invalid-feedback">
+                                            Valid Number is required.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label>Pmin</label>
+                                        <input type="text" class="form-control" id="Pmin${i}" placeholder="" value="" name="limitsMin[]" required>
+                                        <div class="invalid-feedback">
+                                            Valid Number is required.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label>Pmax</label>
+                                        <input type="text" class="form-control" id="Pmin${i}" placeholder="" value="" name="limitsMax[]" required>
+                                        <div class="invalid-feedback">
+                                            Valid Number is required.
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                    
+                    container.appendChild(doc);
+                }
+            };
+
+            let showOutput = (powers) => {
+                console.log(powers);
+                let outputDiv = document.getElementById('outputDiv');
+                outputDiv.style.display = 'block';
+                let m = document.getElementById('generators').value;
+                let table = document.getElementById('tableRows');
+
+                while (table.hasChildNodes()) {
+                    table.removeChild(table.lastChild);
+                }
+
+                for (let i = 0; i < m; i++) {
+                    let tr = document.createElement('tr');
+                    table.appendChild(tr);
+                    tr.innerHTML = `
+                                    <th scope="row">Generator ${i + 1}</th>
+                                    <td>${powers[i].toFixed(2)} MW</td>
+                                `;
+                }
+            };
+
+
+            let calculate = () => {
+                let m = parseInt(document.getElementById('generators').value);
+                let pd = parseInt(document.getElementById('powerDemand').value);
+
+                let costsA = document.getElementsByName('costsA[]');
+                let costsB = document.getElementsByName('costsB[]');
+                let costsC = document.getElementsByName('costsC[]');
+                let limitsMin = document.getElementsByName('limitsMin[]');
+                let limitsMax = document.getElementsByName('limitsMax[]');
+
+
+                let costArray = [];
+                let limitArray = [];
+
+                for (let i = 0; i < m; i++) {
+                    let A = Number(costsA[i].value);
+                    let B = Number(costsB[i].value);
+                    let C = Number(costsC[i].value);
+                    let Pmax = Number(limitsMax[i].value);
+                    let Pmin = Number(limitsMin[i].value);
+                    costArray.push([ A, B, C ]);
+                    limitArray.push([ Pmin, Pmax ]);
+                }
+
+                console.log(costArray, limitArray);
+
+                showOutput(economics(costArray, limitArray, m, pd));
+            };
+
+        </script>
+
+</body>
+
+</html>
