@@ -1,14 +1,8 @@
-Group Members:
-
-Joel Johnson - 107117046
-Thomas Mathew - 107117102
-
 Software Used:
-
+HTML, CSS, Bootstrap, JavaScript
 
 Requirements:
-
+None
 
 References:
-Class Notes (Contact Hour 9 & 10)
-https://getbootstrap.com/
+PPT 9 & 10, class lectures
